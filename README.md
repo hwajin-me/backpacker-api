@@ -2,7 +2,7 @@
 - OpenAPI Docs: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
 ### Execute
-- JVM 11
+- Java 11
 - MySQL 8
 
 #### Build
