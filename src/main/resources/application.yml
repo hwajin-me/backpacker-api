@@ -1,0 +1,73 @@
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+
+spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${DB_DDL_AUTO:validate}
+
+  datasource:
+    primary:
+      hikari:
+        jdbc-url: ${DB_HOSTNAME}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+        auto-commit: false
+    reader:
+      hikari:
+        jdbc-url: ${DB_READER_HOSTNAME}
+        username: ${DB_READER_USERNAME}
+        password: ${DB_READER_PASSWORD}
+        auto-commit: false
+  data:
+    web:
+      pageable:
+        max-page-size: 200
+  liquibase:
+    enabled: true
+  sql:
+    init:
+      mode: never
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  redis:
+    host: ${REDIS_HOST:localhost}
+
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+
+
+springfox:
+  documentation:
+    open-api:
+      enabled: true
+    swagger-ui:
+      enabled: true
+
+openapi:
+  docs:
+    title: ${OPENAPI_TITLE:Backpacker}
+    description: ${OPENAPI_DESCRIPTION:Backpacker Idus API}
+    version: ${OPENAPI_VERSION:1.0.0}
+
+application:
+  host: ${APPLICATION_HOST}
+  debug: false
+
+user:
+  jwt:
+    secret: ${USER_JWT_SECRET}
+    issuer: ${USER_JWT_ISSUER}
+    expires-in: 300
+    refresh-expires-in: 1440
+    algorithm: hs512

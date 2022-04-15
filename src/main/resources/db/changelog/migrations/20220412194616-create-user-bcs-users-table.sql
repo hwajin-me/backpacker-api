@@ -1,0 +1,46 @@
+--liquibase formatted sql
+--changeset root:20220412194616
+--type create
+BEGIN;
+CREATE TABLE IF NOT EXISTS user_bcs_user_information
+(
+    id BINARY(16) NOT NULL PRIMARY KEY COMMENT 'MANAGED BY APPLICATION',
+    sex VARCHAR(8) COMMENT 'SEX NOT THE GENDER',
+    created_at DATETIME,
+    updated_at DATETIME
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT 'USER Boundary Contexts User Aggregate Root SUBDOMAIN UserInformation';
+
+CREATE TABLE IF NOT EXISTS user_bcs_user_orders
+(
+    id BINARY(16) NOT NULL PRIMARY KEY COMMENT 'MANAGED BY APPLICATION',
+    order_id BINARY(16) NOT NULL COMMENT 'ORDER BCs ORDER AGGREGATE ROOT ID',
+    code VARCHAR(12) NOT NULL COMMENT 'ORDER BCs ORDER AGGREGATE ROOT CODE',
+    product_name VARCHAR(100) NOT NULL COMMENT 'ORDER BCs ORDER AGGREGATE ROOT PRODUCT NAME',
+    ordered_at DATETIME NOT NULL COMMENT 'ORDER BCs ORDER AGGREGATE ROOT ORDERED AT',
+    created_at DATETIME,
+    updated_at DATETIME,
+    UNIQUE(order_id) /** 같은 주문을 다른 사용자가 더 가지고 있을 수 없음 **/
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT 'USER Boundary Contexts User Aggregate Root SUBDOMAIN UserOrder';
+
+CREATE TABLE IF NOT EXISTS user_bcs_users
+(
+    id BINARY(16) NOT NULL PRIMARY KEY COMMENT 'User AggregateRoot UUID',
+    name VARCHAR(20) NOT NULL COMMENT 'USER NAME',
+    nick_name VARCHAR(30) NOT NULL COMMENT 'USER NICK NAME',
+    email VARCHAR(100) NOT NULL COMMENT 'USER EMAIL',
+    phone_number VARCHAR(20) NOT NULL COMMENT 'USER PHONE NUMBER',
+    password VARCHAR(128) NOT NULL COMMENT 'USER PASSWORD BCRYPT HASH',
+    information_id BINARY(16) COMMENT 'USER BCS USER INFORMATION', /* JPA 특화 방식의 Foreign Key */
+    order_id BINARY(16) COMMENT 'USER BCS USER ORDER', /* JPA 특화 방식의 Foreign Key */
+    created_at DATETIME COMMENT 'AGGREGATE ROOT CREATED AT',
+    updated_at DATETIME COMMENT 'AGGREGATE ROOT UPDATED AT',
+    deleted_at DATETIME COMMENT 'AGGREGATE ROOT DELETED AT (NOT NULL EQ SOFT DELETED)',
+    INDEX(created_at DESC),
+    INDEX(updated_at DESC),
+    UNIQUE(email), /* 로그인에 대한 조건이 없어 이메일을 로그인용으로 사용 */
+    UNIQUE(information_id),
+    UNIQUE(order_id),
+    FOREIGN KEY (information_id) REFERENCES user_bcs_user_information (id) ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES user_bcs_user_orders (id) ON UPDATE RESTRICT ON DELETE CASCADE
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COMMENT 'USER Boundary Contexts User Aggregate Root';
+COMMIT;

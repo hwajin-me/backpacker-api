@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    show-sql: true
+  datasource:
+    primary:
+      hikari:
+        jdbc-url: jdbc:mysql://localhost:3306/backpacker?serverTimezone=UTC&useLegacyDatetimeCode=false
+        username: backpacker
+        password: backpacker
+        auto-commit: false
+    reader:
+      hikari:
+        jdbc-url: jdbc:mysql://localhost:3306/backpacker?serverTimezone=UTC&useLegacyDatetimeCode=false
+        username: backpacker
+        password: backpacker
+        auto-commit: false
+  liquibase:
+    drop-first: true
+  redis:
+    host: localhost
+
+application:
+  host: localhost:8080
+  debug: true
+
+user:
+  jwt:
+    secret: 2dae84f846e4f4b158a8d26681707f4338495bc7ab68151d7f7679cc5e56202dd3da0d356da007a7c28cb0b780418f4f3246769972d6feaa8f610c7d1e7ecf6a
+    issuer: LOCAL_BACKPACKER
+    algorithm: hs512

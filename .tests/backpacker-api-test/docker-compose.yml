@@ -1,0 +1,25 @@
+version: '3.1'
+
+services:
+  mysql:
+    container_name: backpacker-api-db
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_USER: backpacker
+      MYSQL_PASSWORD: backpacker
+      MYSQL_DATABASE: backpacker
+      TZ: UTC
+    ports:
+      - 3306:3306
+
+  redis:
+    container_name: backpacker-redis
+    image: redis:6
+    restart: always
+    platform: linux/amd64
+    ports:
+      - 6379:6379

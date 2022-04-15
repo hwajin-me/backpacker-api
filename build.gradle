@@ -1,0 +1,132 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+plugins {
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'com.diffplug.spotless' version '6.4.2'
+}
+
+group = 'com.idus.backpacker'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat()
+        trimTrailingWhitespace()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        endWithNewline()
+    }
+}
+
+/**
+ * Dependency Version
+ */
+def queryDslVersion = "5.0.0"
+def phoneNumberLibVersion = "8.12.45"
+
+ext {
+    set('log4j2.version', '2.17.2') // Log4j2 CVE Issue
+}
+
+configurations {
+    implementation.exclude module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+    implementation 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation "com.querydsl:querydsl-core:${queryDslVersion}"
+    implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+    implementation "io.jsonwebtoken:jjwt:0.9.1"
+    implementation "org.liquibase:liquibase-core:4.9.1"
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    implementation "com.googlecode.libphonenumber:libphonenumber:${phoneNumberLibVersion}"
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'commons-codec:commons-codec'
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    annotationProcessor(
+            "javax.annotation:javax.annotation-api:1.3.2",
+            "javax.persistence:javax.persistence-api",
+            "org.projectlombok:lombok",
+            "org.springframework.boot:spring-boot-configuration-processor",
+            "com.querydsl:querydsl-apt:${queryDslVersion}:jpa"
+    )
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'com.h2database:h2'
+    testImplementation 'it.ozimov:embedded-redis:0.7.2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
+/**
+ * Create SQL
+ */
+task("migration") {
+    doLast {
+        if (System.getProperty("type") == null || System.getProperty("name") == null) {
+            throw new RuntimeException("Missing args (type and name)");
+        }
+        def dt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        new File(
+                sourceSets.main.resources.srcDirs.first().absolutePath,
+                String.format(
+                        "/db/changelog/migrations/%s-%s-%s.sql",
+                        dt,
+                        System.getProperty("type"),
+                        System.getProperty("name")
+                )
+        ).text = """--liquibase formatted sql
+--changeset root:${dt}
+--type ${System.getProperty("type")} 
+"""
+    }
+}
+
+task("seed") {
+    doLast {
+        if (System.getProperty("name") == null) {
+            throw new RuntimeException("Missing args (type and name)");
+        }
+        def dt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        new File(
+                sourceSets.main.resources.srcDirs.first().absolutePath,
+                String.format(
+                        "/db/changelog/seeds/seeds-%s-%s.sql",
+                        dt,
+                        System.getProperty("name")
+                )
+        ).text = """--liquibase formatted sql
+--changeset seed:${dt}
+"""
+    }
+}
